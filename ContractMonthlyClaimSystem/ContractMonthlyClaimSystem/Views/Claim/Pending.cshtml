@@ -1,0 +1,52 @@
+﻿@model IEnumerable<ContractMonthlyClaimSystem.Models.Claim>
+
+<h2>Pending Claims</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Lecturer Name</th>
+            <th>Hours Worked</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var claim in Model)
+        {
+            <tr>
+                <td>@claim.LecturerName</td>
+                <td>@claim.HoursWorked</td>
+                <td>@claim.Status</td>
+                <td>
+                    @if (claim.Status == "Pending")
+                    {
+                        <a href="@Url.Action("Approve", "Claim", new { id = claim.Id })">Approve</a>
+ 
+                    < a href = "@Url.Action("Reject", "Claim", new { id = claim.Id })" > Reject </ a >
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+<!-- Include the SignalR library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/5.0.16/signalr.min.js"></script>
+
+<script>
+    // Establish a connection to the SignalR hub
+    const connection = new signalR.HubConnectionBuilder()
+        .withUrl("/claimshub")  // The URL of the SignalR Hub
+        .build();
+
+    // Listen for the "ClaimStatusUpdated" event from the server
+    connection.on("ClaimStatusUpdated", function (claimId, status) {
+        // Notify the user of the status update (optional)
+        alert(`Claim ${claimId} has been updated to ${status}`);
+
+        // Reload the page to reflect the updated claim status (optional)
+        location.reload();
+    });
+
+    // Start the connection to the SignalR hub
+    connection.start().catch(err => console.error("Error while starting SignalR connection: " + err.toString()));
+</script>
